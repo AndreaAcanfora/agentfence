@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/AndreaAcanfora/agentfence/main/schema.json",
+  "title": "agentfence policy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "extends": {
+      "description": "Built-in presets to start from. Default: [\"recommended\"].",
+      "type": "array",
+      "items": { "enum": ["recommended", "destructive", "git-safe", "secrets", "remote-exec", "evasion", "cloud", "database", "publish"] }
+    },
+    "disable": { "description": "Rule ids to turn off.", "type": "array", "items": { "type": "string" } },
+    "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
+    "tests": { "type": "array", "items": { "$ref": "#/$defs/test" } }
+  },
+  "$defs": {
+    "strings": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+    "matchers": {
+      "type": "object",
+      "properties": {
+        "bash": { "$ref": "#/$defs/strings", "description": "Command patterns, e.g. \"git push {-f,--force}\"" },
+        "bashRegex": { "$ref": "#/$defs/strings", "description": "Case-insensitive regex tested on each parsed command" },
+        "read": { "$ref": "#/$defs/strings", "description": "Path globs for reads (Read, Grep, Glob, cat, cp, <, ...)" },
+        "write": { "$ref": "#/$defs/strings", "description": "Path globs for writes (Edit, Write, >, tee, rm, mv, ...)" },
+        "tool": { "$ref": "#/$defs/strings", "description": "Tool name globs, e.g. \"mcp__*stripe*__*\"" },
+        "pipe": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2, "description": "[producer, consumer] in one pipeline" }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/matchers" }],
+      "required": ["decision"],
+      "properties": {
+        "id": { "type": "string" },
+        "decision": { "enum": ["deny", "ask", "allow"] },
+        "reason": { "type": "string" },
+        "bash": true, "bashRegex": true, "read": true, "write": true, "tool": true, "pipe": true,
+        "unless": { "$ref": "#/$defs/matchers" },
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "cwd": { "$ref": "#/$defs/strings" }, "branch": { "$ref": "#/$defs/strings" } }
+        }
+      },
+      "additionalProperties": false
+    },
+    "test": {
+      "type": "object",
+      "required": ["expect"],
+      "properties": {
+        "bash": { "type": "string" },
+        "read": { "type": "string" },
+        "write": { "type": "string" },
+        "tool": { "type": "string" },
+        "cwd": { "type": "string" },
+        "branch": { "type": "string" },
+        "expect": { "enum": ["deny", "ask", "allow", "none"] }
+      }
+    }
+  }
+}

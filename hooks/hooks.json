@@ -1,0 +1,17 @@
+{
+  "description": "agentfence: check every tool call against your policy before it runs",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v node >/dev/null 2>&1 || { echo 'agentfence: Node.js 18+ is required to enforce your policy. Install Node or disable the agentfence plugin.' >&2; exit 2; }; node \"${CLAUDE_PLUGIN_ROOT}/bin/agentfence.mjs\" hook",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

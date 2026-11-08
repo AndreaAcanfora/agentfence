@@ -1,0 +1,93 @@
+// Git and GitHub operations that rewrite or delete shared history.
+{
+  "rules": [
+    {
+      "id": "git-force-push",
+      "decision": "deny",
+      "reason": "Force push rewrites remote history. Use --force-with-lease if you really need it, and ask a human first",
+      "bash": ["git push {-f,--force}", "git push +*", "git push * +*"]
+    },
+    {
+      "id": "git-force-with-lease",
+      "decision": "ask",
+      "reason": "Force push (with lease) rewrites remote history",
+      "bash": "git push {--force-with-lease,--force-if-includes}"
+    },
+    {
+      "id": "git-push-protected-branch",
+      "decision": "ask",
+      "reason": "Pushes directly to a protected branch",
+      "bash": ["git push * {main,master,production,prod,release}", "git push * *:{main,master,production,prod,release}", "git push * refs/heads/{main,master}"]
+    },
+    {
+      "id": "git-push-from-protected-branch",
+      "decision": "ask",
+      "reason": "You are on a protected branch: this push goes straight to it",
+      "bash": "git push",
+      "when": { "branch": ["main", "master", "production", "prod"] }
+    },
+    {
+      "id": "git-delete-remote-branch",
+      "decision": "ask",
+      "reason": "Deletes a branch on the remote",
+      "bash": ["git push {-d,--delete}", "git push * :*"]
+    },
+    {
+      "id": "git-discard-work",
+      "decision": "ask",
+      "reason": "Discards uncommitted work that cannot be recovered",
+      "bash": ["git reset --hard", "git clean -f", "git clean --force", "git checkout .", "git restore .", "git stash {drop,clear}"]
+    },
+    {
+      "id": "git-delete-branch",
+      "decision": "ask",
+      "reason": "Force-deletes a local branch, even if it is not merged",
+      "bash": ["git branch -D", "git branch --delete --force"]
+    },
+    {
+      "id": "git-rewrite-history",
+      "decision": "ask",
+      "reason": "Rewrites the whole repository history",
+      "bash": ["git filter-branch", "git filter-repo", "git reflog expire", "bfg"]
+    },
+    {
+      "id": "gh-repo-delete",
+      "decision": "deny",
+      "reason": "Deletes a GitHub repository",
+      "bash": ["gh repo delete", "gh api {-X,--method} DELETE repos/*/*"]
+    },
+    {
+      "id": "gh-risky",
+      "decision": "ask",
+      "reason": "Changes repository visibility, settings or releases on GitHub",
+      "bash": ["gh repo edit --visibility", "gh repo archive", "gh repo rename", "gh release delete", "gh api {-X,--method} DELETE"]
+    }
+  ],
+  "tests": [
+    { "bash": "git push --force origin main", "expect": "deny" },
+    { "bash": "git push -fu origin feature", "expect": "deny" },
+    { "bash": "git push origin +feature", "expect": "deny" },
+    { "bash": "cd repo && sh -c \"git push -f\"", "expect": "deny" },
+    { "bash": "git push --force-with-lease origin feature", "expect": "ask" },
+    { "bash": "git push origin main", "expect": "ask" },
+    { "bash": "git push origin HEAD:main", "expect": "ask" },
+    { "bash": "git push -u origin feature/login", "expect": "none", "branch": "feature/login" },
+    { "bash": "git push", "branch": "main", "expect": "ask" },
+    { "bash": "git push", "branch": "feature/x", "expect": "none" },
+    { "bash": "git push origin --delete old-branch", "expect": "ask" },
+    { "bash": "git push origin :old-branch", "expect": "ask" },
+    { "bash": "git reset --hard HEAD~3", "expect": "ask" },
+    { "bash": "git reset --soft HEAD~1", "expect": "none" },
+    { "bash": "git clean -fdx", "expect": "ask" },
+    { "bash": "git clean -n", "expect": "none" },
+    { "bash": "git checkout -- .", "expect": "ask" },
+    { "bash": "git checkout -b feature", "expect": "none" },
+    { "bash": "git branch -D feature", "expect": "ask" },
+    { "bash": "git branch -d feature", "expect": "none" },
+    { "bash": "gh repo delete me/project --yes", "expect": "deny" },
+    { "bash": "gh repo edit --visibility public", "expect": "ask" },
+    { "bash": "gh pr create --fill", "expect": "none" },
+    { "bash": "git log --oneline -n 5", "expect": "none" },
+    { "bash": "git commit -m 'git push --force is bad'", "expect": "none" }
+  ]
+}

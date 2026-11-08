@@ -1,0 +1,10 @@
+{
+  "name": "agentfence",
+  "version": "0.1.0",
+  "description": "A policy firewall for Claude Code: blocks force pushes, rm -rf ~, secret reads and curl | sh, with readable rules and policy unit tests.",
+  "author": { "name": "Andrea Acanfora", "url": "https://github.com/AndreaAcanfora" },
+  "homepage": "https://github.com/AndreaAcanfora/agentfence",
+  "repository": "https://github.com/AndreaAcanfora/agentfence",
+  "license": "MIT",
+  "keywords": ["security", "guardrails", "hooks", "policy", "git", "secrets"]
+}

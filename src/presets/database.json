@@ -1,0 +1,34 @@
+// Opt-in: destructive database statements. Add "database" to "extends".
+{
+  "rules": [
+    {
+      "id": "sql-drop",
+      "decision": "ask",
+      "reason": "Drops or truncates database objects",
+      "bashRegex": ["\\bdrop\\s+(table|database|schema|collection|index|view)\\b", "\\btruncate\\s+table\\b", "\\bdropDatabase\\s*\\(", "\\.drop\\s*\\(\\s*\\)"]
+    },
+    {
+      "id": "sql-delete-all",
+      "decision": "ask",
+      "reason": "DELETE or UPDATE without a WHERE clause changes every row",
+      "bashRegex": ["\\bdelete\\s+from\\s+[\\w.\"`]+\\s*(;|'|\"|$)", "\\bupdate\\s+[\\w.\"`]+\\s+set\\s+(?![^;'\"]*\\bwhere\\b)[^;'\"]*(;|'|\"|$)"]
+    },
+    {
+      "id": "db-reset",
+      "decision": "ask",
+      "reason": "Wipes a database",
+      "bash": ["dropdb", "redis-cli {flushall,flushdb,FLUSHALL,FLUSHDB}", "prisma migrate reset", "prisma db push --force-reset", "rails db:{drop,reset,schema:load}", "rake db:{drop,reset}", "bin/rails db:{drop,reset}", "php artisan migrate:{fresh,reset,refresh}", "python manage.py flush", "supabase db reset"]
+    }
+  ],
+  "tests": [
+    { "bash": "psql -c 'DROP TABLE users'", "expect": "ask" },
+    { "bash": "psql $DATABASE_URL -c \"delete from orders;\"", "expect": "ask" },
+    { "bash": "psql -c \"DELETE FROM orders WHERE id = 3\"", "expect": "none" },
+    { "bash": "sqlite3 app.db \"UPDATE users SET admin = 1\"", "expect": "ask" },
+    { "bash": "sqlite3 app.db \"UPDATE users SET admin = 1 WHERE id = 2\"", "expect": "none" },
+    { "bash": "psql -c 'select count(*) from users'", "expect": "none" },
+    { "bash": "redis-cli FLUSHALL", "expect": "ask" },
+    { "bash": "npx prisma migrate reset --force", "expect": "ask" },
+    { "bash": "npx prisma migrate dev", "expect": "none" }
+  ]
+}

@@ -1,0 +1,45 @@
+// Opt-in: infrastructure and cloud changes. Add "cloud" to "extends".
+{
+  "rules": [
+    {
+      "id": "terraform-apply",
+      "decision": "ask",
+      "reason": "Changes real infrastructure",
+      "bash": ["terraform {apply,destroy,import}", "terraform state {rm,mv,push}", "tofu {apply,destroy}", "pulumi {up,destroy}", "cdk {deploy,destroy}"]
+    },
+    {
+      "id": "kubectl-mutate",
+      "decision": "ask",
+      "reason": "Changes a Kubernetes cluster",
+      "bash": ["kubectl {delete,apply,replace,patch,scale,drain,cordon,rollout}", "helm {install,upgrade,uninstall,delete,rollback}"]
+    },
+    {
+      "id": "cloud-delete",
+      "decision": "ask",
+      "reason": "Deletes cloud resources",
+      "bash": [
+        "aws {delete-*,terminate-*,remove-*,deregister-*,purge-*}", "aws s3 {rm,rb}", "aws s3 sync --delete",
+        "gcloud delete", "az delete", "doctl delete", "flyctl destroy", "fly destroy", "vercel {remove,rm}",
+        "heroku {apps:destroy,pg:reset}", "netlify sites:delete", "railway down", "wrangler delete"
+      ]
+    },
+    {
+      "id": "cloud-deploy",
+      "decision": "ask",
+      "reason": "Deploys to production",
+      "bash": ["vercel --prod", "netlify deploy --prod", "flyctl deploy", "fly deploy", "wrangler deploy", "firebase deploy", "gcloud deploy", "serverless deploy", "sls deploy"]
+    }
+  ],
+  "tests": [
+    { "bash": "terraform apply -auto-approve", "expect": "ask" },
+    { "bash": "terraform plan", "expect": "none" },
+    { "bash": "kubectl delete pod web-1", "expect": "ask" },
+    { "bash": "kubectl get pods -A", "expect": "none" },
+    { "bash": "aws ec2 terminate-instances --instance-ids i-123", "expect": "ask" },
+    { "bash": "aws s3 rm s3://bucket --recursive", "expect": "ask" },
+    { "bash": "aws s3 ls", "expect": "none" },
+    { "bash": "gcloud compute instances delete vm-1", "expect": "ask" },
+    { "bash": "vercel --prod", "expect": "ask" },
+    { "bash": "vercel dev", "expect": "none" }
+  ]
+}

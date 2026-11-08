@@ -1,0 +1,79 @@
+// Commands that destroy data outside of git's reach.
+{
+  "rules": [
+    {
+      "id": "rm-root-or-home",
+      "decision": "deny",
+      "reason": "Recursive delete of /, your home directory or a top-level folder in them",
+      "bash": "rm {-r,-R,--recursive} {/,/*,~,~/*}"
+    },
+    {
+      "id": "rm-everything-here",
+      "decision": "ask",
+      "reason": "Recursive delete of the current or parent directory",
+      "bash": "rm {-r,-R,--recursive} {.,..,\\*,./\\*,../*}"
+    },
+    {
+      "id": "disk-wipe",
+      "decision": "deny",
+      "reason": "Formats or overwrites a disk",
+      "bash": ["mkfs*", "dd of=/dev/*", "wipefs", "fdisk", "sfdisk", "parted", "diskutil {eraseDisk,eraseVolume,partitionDisk}"]
+    },
+    {
+      "id": "chmod-recursive-777",
+      "decision": "ask",
+      "reason": "Makes a whole tree world-writable",
+      "bash": "chmod {-R,--recursive} {777,a+rwx,ugo+rwx}"
+    },
+    {
+      "id": "chown-recursive-system",
+      "decision": "deny",
+      "reason": "Changes ownership of system directories",
+      "bash": "chown {-R,--recursive} * {/,/usr,/etc,/var,/bin,/lib,/opt,/System,/Library}"
+    },
+    {
+      "id": "find-delete",
+      "decision": "ask",
+      "reason": "find -delete removes every match without listing it first",
+      "bash": "find -delete"
+    },
+    {
+      "id": "shred",
+      "decision": "ask",
+      "reason": "Irrecoverably overwrites files",
+      "bash": ["shred", "srm"]
+    },
+    {
+      "id": "power",
+      "decision": "ask",
+      "reason": "Shuts down or reboots the machine",
+      "bash": ["shutdown", "reboot", "halt", "poweroff", "systemctl {poweroff,reboot,halt}"]
+    }
+  ],
+  "tests": [
+    { "bash": "rm -rf /", "expect": "deny" },
+    { "bash": "sudo rm -rf --no-preserve-root /", "expect": "deny" },
+    { "bash": "rm -fr ~", "expect": "deny" },
+    { "bash": "rm -rf $HOME", "expect": "deny" },
+    { "bash": "rm -rf ~/", "expect": "deny" },
+    { "bash": "rm -rf ~/Documents", "expect": "deny" },
+    { "bash": "rm -rf /usr", "expect": "deny" },
+    { "bash": "cd /tmp && r''m -r -f /", "expect": "deny" },
+    { "bash": "bash -c 'rm -rf /'", "expect": "deny" },
+    { "bash": "echo / | xargs rm -rf", "expect": "none" },
+    { "bash": "rm -rf .", "expect": "ask" },
+    { "bash": "rm -rf *", "expect": "ask" },
+    { "bash": "rm -rf node_modules dist", "expect": "none" },
+    { "bash": "rm -rf ~/project/build", "expect": "none" },
+    { "bash": "rm -rf /tmp/build-123", "expect": "none" },
+    { "bash": "rm file.txt", "expect": "none" },
+    { "bash": "dd if=image.iso of=/dev/sda bs=4M", "expect": "deny" },
+    { "bash": "dd if=/dev/zero of=./disk.img bs=1M count=10", "expect": "none" },
+    { "bash": "sudo mkfs.ext4 /dev/sdb1", "expect": "deny" },
+    { "bash": "chmod -R 777 .", "expect": "ask" },
+    { "bash": "chmod 644 README.md", "expect": "none" },
+    { "bash": "find . -name '*.pyc' -delete", "expect": "ask" },
+    { "bash": "find . -name '*.pyc'", "expect": "none" },
+    { "bash": "git commit -m 'fix rm -rf / bug'", "expect": "none" }
+  ]
+}

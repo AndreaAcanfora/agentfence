@@ -1,0 +1,13 @@
+{
+  "name": "agentfence",
+  "description": "agentfence: a policy firewall for Claude Code",
+  "owner": { "name": "Andrea Acanfora", "url": "https://github.com/AndreaAcanfora" },
+  "plugins": [
+    {
+      "name": "agentfence",
+      "source": "./",
+      "description": "Blocks force pushes, rm -rf ~, secret reads and curl | sh before they run. Rules are readable JSON with unit tests.",
+      "category": "security"
+    }
+  ]
+}

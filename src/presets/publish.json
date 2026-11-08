@@ -1,0 +1,29 @@
+// Opt-in: anything that publishes a package, image or release. Add "publish" to "extends".
+{
+  "rules": [
+    {
+      "id": "publish-package",
+      "decision": "ask",
+      "reason": "Publishes to a public registry; this cannot be fully undone",
+      "bash": [
+        "npm publish", "pnpm publish", "yarn publish", "yarn npm publish", "bun publish", "cargo publish", "twine upload",
+        "poetry publish", "uv publish", "gem push", "dotnet nuget push", "mvn deploy", "gradle publish", "vsce publish", "ovsx publish",
+        "docker push", "podman push", "gh release create", "goreleaser release"
+      ]
+    },
+    {
+      "id": "push-tags",
+      "decision": "ask",
+      "reason": "Pushing tags usually triggers a release",
+      "bash": ["git push --tags", "git push * v[0-9]*", "git push * refs/tags/*"]
+    }
+  ],
+  "tests": [
+    { "bash": "npm publish --access public", "expect": "ask" },
+    { "bash": "npm pack", "expect": "none" },
+    { "bash": "docker push ghcr.io/me/app:1.0", "expect": "ask" },
+    { "bash": "git push origin v1.2.0", "expect": "ask" },
+    { "bash": "git push --tags", "expect": "ask" },
+    { "bash": "cargo build --release", "expect": "none" }
+  ]
+}

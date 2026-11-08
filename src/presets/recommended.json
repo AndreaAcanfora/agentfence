@@ -1,0 +1,4 @@
+// The default policy when you do not set "extends".
+{
+  "extends": ["destructive", "git-safe", "secrets", "remote-exec", "evasion"]
+}

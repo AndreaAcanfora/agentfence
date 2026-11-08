@@ -1,0 +1,19 @@
+{
+  "name": "agentfence",
+  "version": "0.1.0",
+  "description": "A policy firewall for Claude Code: a real shell parser, readable rules and policy unit tests.",
+  "type": "module",
+  "bin": { "agentfence": "bin/agentfence.mjs" },
+  "files": ["bin", "src", "hooks", "skills", ".claude-plugin", "schema.json"],
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check bin/agentfence.mjs && node bin/agentfence.mjs test --presets"
+  },
+  "engines": { "node": ">=18" },
+  "keywords": ["claude-code", "claude-code-plugin", "ai-agents", "security", "guardrails", "hooks", "policy"],
+  "repository": { "type": "git", "url": "git+https://github.com/AndreaAcanfora/agentfence.git" },
+  "homepage": "https://github.com/AndreaAcanfora/agentfence#readme",
+  "bugs": "https://github.com/AndreaAcanfora/agentfence/issues",
+  "author": "Andrea Acanfora",
+  "license": "MIT"
+}

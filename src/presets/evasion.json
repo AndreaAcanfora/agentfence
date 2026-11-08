@@ -1,0 +1,25 @@
+// Commands built so that nobody can tell what they run.
+{
+  "rules": [
+    {
+      "id": "dynamic-command",
+      "decision": "ask",
+      "reason": "The command name comes from a variable or a substitution, so agentfence cannot tell what will run",
+      "bash": ["$*", "`*"]
+    },
+    {
+      "id": "decode-pipe-shell",
+      "decision": "ask",
+      "reason": "Decodes hidden text and runs it as a script",
+      "pipe": ["{base64,base32,xxd,openssl,gzip,gunzip,zcat,rev,tr,printf,echo}", "{sh,bash,zsh,dash,ksh,fish,eval}"]
+    }
+  ],
+  "tests": [
+    { "bash": "X=rm; $X -rf /", "expect": "ask" },
+    { "bash": "$(echo rm) -rf /tmp/x", "expect": "ask" },
+    { "bash": "echo cm0gLXJmIC8K | base64 -d | sh", "expect": "ask" },
+    { "bash": "echo 'ls -la' | bash", "expect": "ask" },
+    { "bash": "echo $PATH", "expect": "none" },
+    { "bash": "base64 -d key.b64 > key.bin", "expect": "none" }
+  ]
+}
