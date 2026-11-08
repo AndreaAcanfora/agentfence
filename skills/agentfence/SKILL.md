@@ -18,7 +18,8 @@ A denied call shows up as `agentfence [rule-id]: reason (matched: ...)`.
 
 ## The CLI
 
-The CLI is in this plugin: `node "${CLAUDE_PLUGIN_ROOT}/bin/agentfence.mjs" <command>`.
+The CLI is in this plugin: `node "${CLAUDE_PLUGIN_ROOT}/bin/agentfence.mjs" <command>`
+(or `npx @andreaaca/agentfence <command>`).
 
 - `check -- <command>`: what the policy decides for a shell command, and how it was parsed
 - `check --read <path>` / `--write <path>` / `--tool <name>`

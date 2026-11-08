@@ -133,7 +133,7 @@ and `<project>/.claude/agentfence.local.json` (yours, this project). A rule with
 
 ## CLI
 
-The plugin ships the CLI in its folder; ask Claude to run it, or run it yourself with `node <plugin dir>/bin/agentfence.mjs` (or clone this repo and `npm link`).
+Run it with `npx @andreaaca/agentfence <command>`, install it with `npm i -g @andreaaca/agentfence` (the command is `agentfence`), or ask Claude to run the copy that ships inside the plugin.
 
 ```
 agentfence check -- <command>       what the policy decides, and how the command was parsed
